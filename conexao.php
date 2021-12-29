@@ -1,8 +1,8 @@
 <?php
 $host = "localhost";
-$db = MY_DATABASE;
-$user = MY_USER;
-$pass = MY_PASSWORD;
+$db = "teste";
+$user = "root";
+$pass = "admin@admin";
 
 $conexao_banco_dados = mysqli_connect($host, $user, $pass, $db);
 
