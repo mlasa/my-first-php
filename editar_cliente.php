@@ -1,4 +1,10 @@
 <?php
+    include('conexao.php');
+
+    $id_cliente = intval($_GET['id']);
+    $sql_consulta_cliente = "SELECT * FROM usuarios WHERE id=$id_cliente";
+    $query_consulta_cliente = $conexao_mysql ->query($sql_consulta_cliente) or die($conexao_mysql->error);
+    $cliente = $query_consulta_cliente -> fetch_assoc();
 
     $erro = false;
 
@@ -8,12 +14,9 @@
 
     if(count($_POST) > 0){
 
-        include('conexao.php');
-
         $nome = $_POST['nome'];
         $email = $_POST['email'];
         $telefone = $_POST['telefone'];
-        $nascimento = $_POST['nascimento'];
 
         if(strlen($nome) < 2 && empty($nome)){
             $erro = "Preencha o campo nome";
@@ -34,23 +37,7 @@
        
         if(!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)){
             $erro = "E-mail inválido";
-        }
-
-        if(!empty($nascimento)){
-            $pedacos = array_reverse(explode('/',$nascimento));
-
-            if(count($pedacos) != 3){
-                $erro = "Data de nascimento inválida, exemplo correto: 15/02/2021";
-            }
-            else{
-                $nascimento = implode('-',$pedacos);
-            }
-
-        }
-        else{
-            $erro = "Preencha o campo de data de nascimento";
-        }
-        
+        }        
 
         if($erro){
             echo 
@@ -62,21 +49,27 @@
         }
         else{
             $comando_sql = "
-                INSERT INTO usuarios
-                (nome, email, dataNascimento, telefone)
-                VALUES ('$nome', '$email', '$nascimento', '$telefone');
+                UPDATE usuarios SET 
+                    nome            = '$nome',
+                    email           = '$email',
+                    telefone        = '$telefone'
+                WHERE id = $id_cliente
             ";
 
             $operacao_banco = $conexao_mysql -> query($comando_sql) 
             or die($conexao_mysql -> error);
 
             if($operacao_banco){
-                echo 
-                "<strong class=\"sucesso\">
-                    Cliente cadastrado com sucesso!
+                echo
+                "<strong class='sucesso'>
+                    Dados do cliente atualizado!
                 </strong>";
 
-                unset($_POST);
+                echo "
+                    <a class='link-button' href='clientes.php'> Voltar para lista de clientes</a>
+                ";
+
+                die();
             }
         }
     }
@@ -90,37 +83,33 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
-    <title>Cadastrar cliente</title>
+    <title>Editar cliente</title>
+
 </head>
 <body>
     <div>
         <a href="clientes.php">Lista de clientes</a>
     </div>
-    <form action="cadastrar_cliente.php" method="POST">
+    <form action="" method="POST">
         <div class="form-content">
-            <h4>Novo cliente</h4>
+            <h4>Editar dados do cliente</h4>
             <p>
                 <input value="<?php 
-                    if(isset($_POST['nome'])) echo $_POST['nome'];
+                    echo $cliente["nome"];
                 ?>" type="text" name="nome" id="nome" placeholder="Nome">
             </p>
             <p>
                 <input value="<?php 
-                    if(isset($_POST['email'])) echo $_POST['email'];
+                    echo $cliente["email"];
                 ?>" type="text" name="email" id="email" placeholder="E-mail">
             </p>
             <p>
                 <input value="<?php 
-                    if(isset($_POST['telefone'])) echo $_POST['telefone'];
+                    if(!empty($cliente["telefone"])) echo formatar_telefone($cliente["telefone"]); else echo "Sem telefone";
                 ?>" type="text" name="telefone" id="telefone" placeholder="Telefone, ex:(11) 98888-8888">
             </p>
             <p>
-                <input value="<?php 
-                    if(isset($_POST['nascimento'])) echo $_POST['nascimento'];
-                ?>" type="text" name="nascimento" id="nascimento" placeholder="Data de nascimento">
-            </p>
-            <p>
-                <button type="submit">Cadastrar</button>
+                <button type="submit">Salvar</button>
             </p>
         </div>
     </form>

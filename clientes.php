@@ -5,9 +5,14 @@
         SELECT * FROM usuarios;
     ";
 
-    $query_clientes = $conexao_banco_dados -> query($sql_consulta) or die($conexao_banco_dados -> error);
+    $query_clientes = $conexao_mysql -> query($sql_consulta) or die($conexao_mysql -> error);
 
     $numero_clientes = $query_clientes -> num_rows;
+
+    function remover_cliente($id){
+        //$sql_remover_cliente = "DELETE FROM usuarios WHERE id=$id";
+        echo "Cliente removido: $id";
+    }
 
 ?>
 
@@ -17,71 +22,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
     <title>Cadastrar cliente</title>
-
-    <style>
-        html{
-            height: 100vh;
-            width: 100vw;
-            font-family: sans-serif;
-        }
-        body{
-            background: #eff3f4;
-            padding: 1rem;
-            height: 100%;
-        }
-        h1,h2,h3,h4,h5,h6,p,strong, input, button{
-            font-size: 1.2rem;
-            color: #494949;
-        }
-        input{
-            border: none;
-            border-bottom: 1px solid black;
-            background: transparent;
-            width: 100%;
-            padding: .5rem;
-        }
-        button[type="submit"]{
-            width: 100%;
-            height: 3rem;
-            background: #88e0a6;
-            border: none;
-            cursor: pointer;
-            border-radius: .5rem;
-            padding: .5rem;
-        }
-        button[type="submit"]:hover{
-            background: #8cd197;
-        }
-        .erro{
-            color:red;
-        }
-        .sucesso{
-            color: lime;
-        }
-
-        th{
-            padding: .5rem;
-        }
-        thead{
-            background: #cce3fc;
-        }
-        .lista-clientes{
-            display:grid;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-        tbody tr{
-            background: white;
-        }
-        tbody tr:nth-child(even){
-            background: #ededed;
-        }
-        tbody td{
-            padding: .5rem;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
@@ -96,6 +38,7 @@
                     <th>Telefone</th>
                     <th>E-mail</th>
                     <th>Cliente desde</th>
+                    <th>...</th>
                 </thead>
                 <tbody>
                     <?php if($numero_clientes == 0){ ?>
@@ -104,13 +47,39 @@
                         </tr>
                     <?php } else{ 
                             while($cliente = $query_clientes -> fetch_assoc()){
+
+                                $telefone = "Não informado";
+                                
+                                if(!empty($cliente["telefone"])){
+                                    $telefone_ddd = substr($cliente["telefone"],0, 2);
+                                    $telefone_parte1 = substr($cliente["telefone"],2, 5);
+                                    $telefone_parte2 = substr($cliente["telefone"],7);
+
+                                    $telefone = "($telefone_ddd) $telefone_parte1 - $telefone_parte2";
+                                }
+
+                                $nascimento = "Não informado";
+                                
+                                if(!empty($cliente["dataNascimento"])){
+                                    $nascimento = formatar_data($cliente['dataNascimento']);
+                                }
+
+                                $cliente_desde = "Não informado";
+                                
+                                if(!empty($cliente["dataCriacao"])){
+                                    $cliente_desde = formatar_data($cliente['dataCriacao']);
+                                }
                         ?>
                         <tr>
                             <td><?php echo $cliente['nome'];  ?></td>
-                            <td><?php echo $cliente['dataNascimento'];  ?></td>
-                            <td><?php echo $cliente['telefone'];  ?></td>
+                            <td><?php echo $nascimento;  ?></td>
+                            <td><?php echo $telefone;  ?></td>
                             <td><?php echo $cliente['email'];  ?></td>
-                            <td><?php echo $cliente['dataCriacao'];  ?></td>
+                            <td><?php echo $cliente_desde;  ?></td>
+                            <td>
+                                <a href="editar_cliente.php?id=<?php echo $cliente['id'];  ?>">Editar</a>
+                                <a href="deletar_cliente.php?id=<?php echo $cliente['id'];  ?>">Excluir</a>
+                            </td>
                         </tr>
                     <?php
                            }
@@ -120,6 +89,6 @@
                 </tbody>
             </table>
         </div>
-    </div>
+    </div>    
 </body>
 </html>
